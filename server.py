@@ -19,7 +19,7 @@ def post_location():
     df = pd.read_csv(StringIO(data))
     df.columns = ['beacon_id', 'rssi', 'userid', 'timestamp']
     data = df
-
+    print(len(df))
     conn = sqlite3.connect('beacon_data.db')
     c = conn.cursor()
     for i, row in data.iterrows():
@@ -94,19 +94,45 @@ def write_to_csv():
     df = pd.DataFrame(res)
     df.columns = ['timestamp', 'userid', 'beacon_id', 'rssi']
     if filename is None:
-        df.set_index('userid').to_csv('data/test_data.csv')
+        df.set_index('userid').to_csv('data/location_data.csv')
     else:
         df.to_csv(filename)
     return 'ok'
 
+@app.route('/purchase_to_csv', methods=['GET'])
+def write_purchase_to_csv():
+    """
+    endpoint to dump db to a csv
+    params (optional): 
+    - userid: userid to return results for
+    - filename: file name to write to
+    """
+    conn = sqlite3.connect('beacon_data.db')
+    c = conn.cursor()
+    userid = request.args.get('userid')
+    filename = request.args.get('filename')
+    if userid is None:
+        res = c.execute("SELECT * FROM purchases;").fetchall()
+    else:
+        res = c.execute("SELECT * FROM purchases WHERE userid = ?;", (userid,)).fetchall()
+    conn.commit()
+    conn.close()
+    df = pd.DataFrame(res)
+    df.columns = ['timestamp', 'userid', 'ean', 'price']
+    if filename is None:
+        df.set_index('userid').to_csv('data/purchase_data.csv')
+    else:
+        df.to_csv(filename)
+    return 'ok'
 
 @app.route('/process', methods=['GET'])
 def process_csv():
     filename = request.args.get('filename')
     if filename is None:
-        filename = 'data/test_data.csv'
+        filename = 'data/location_data.csv'
     from processing.process import process
     df = process(filename)
+    print(len(df))
     df.to_csv(filename[:-4] + '_processed.csv')
     return 'ok'
 
@@ -115,6 +141,7 @@ def post_purchase():
     data = request.get_data(as_text=True)
     df = pd.read_csv(StringIO(data))
     print(df)
+    print(len(df))
     df.columns = ['timestamp', 'userid', 'ean', 'price']
     data = df
     conn = sqlite3.connect('beacon_data.db')
@@ -144,4 +171,5 @@ def get_purchases():
     return str(res)
 
 
-app.run(host='130.233.87.184')
+app.run(host='10.100.18.2')
+
