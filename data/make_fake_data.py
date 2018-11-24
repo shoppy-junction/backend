@@ -15,11 +15,12 @@ BEACONS = {
         12:(13,6)
         }
 l = []
-for i in range(500):
+for user in range(10):
+    for i in range(500):
 
-    for j in BEACONS:
-        d = {"userid": 0, "timestamp":1543020253 + i, "beacon_id": j, "rssi":random.randint(-90, -50)}
-        l += [d]
+        for j in BEACONS:
+            d = {"userid": user, "timestamp":1543020253 + i, "beacon_id": j, "rssi":random.randint(-90, -50)}
+            l += [d]
 
 df = pd.DataFrame(l)
 print(df)

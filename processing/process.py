@@ -15,7 +15,7 @@ BEACONS = {
         12:(13,6)
         }
 
-def coords_from_bt(beacons):
+def triangulate(beacons):
     """
     beacons: a dictionary of beacon id mapped to signal strength
     """
@@ -30,11 +30,14 @@ def coords_from_bt(beacons):
 def main(filename):
     df = pd.read_csv(filename)
     grouped = df.sort_values(['userid', 'timestamp', 'rssi']).groupby(['userid', 'timestamp'])
+    # possibly average over a period of time to smooth?
     df = grouped.head(1)
     df['pos'] = df.apply(lambda row: BEACONS[row.beacon_id], axis=1)
     return df
 
 if __name__ == "__main__":
     filename = "../data/fake_data.csv"
-    print(main(filename))
+    df = main(filename)
+    print(df)
+    df[['userid', 'timestamp', 'pos']].to_csv('fake_xy_for_michael.csv', index=False)
 
