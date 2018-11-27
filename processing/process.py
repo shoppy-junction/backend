@@ -1,7 +1,6 @@
 import pandas as pd
-
 import math
-import numpy
+import numpy as np
 
 
 BEACONS = {
@@ -68,8 +67,14 @@ def process(filename):
     pos = df.set_index(['userid', 'timestamp']).apply(closest_beacon, axis=1)
     df = df.set_index(['userid', 'timestamp'])
     df['x'], df['y'] = pos.apply(lambda x: x[0]), pos.apply(lambda x: x[1])
-    
-    return df[['x', 'y']]
+    df = df[['x', 'y']]
+
+    # add some noise to make data look nicer
+    mu, sigma = 0, 2
+    noise = np.random.normal(mu, sigma, [len(df), 2])
+    print(noise)
+    df = df + noise
+    return df
 
     """ triangulation shit
     # take triangulated value
@@ -93,7 +98,6 @@ if __name__ == "__main__":
     filename = "../data/fake_data.csv"
     df = process(filename)
     print(df)
-    # df[['userid', 'timestamp', 'pos']].to_csv('fake_xy_for_michael.csv', index=False)
     df.to_csv('../data/processed_output.csv')
 
 

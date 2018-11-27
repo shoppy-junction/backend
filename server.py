@@ -8,6 +8,7 @@ from io import StringIO
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 
+db = 'beacon_data.db'
 
 @app.route('/', methods=["GET"])
 def home():
@@ -20,7 +21,7 @@ def post_location():
     df.columns = ['beacon_id', 'rssi', 'userid', 'timestamp']
     data = df
     print(len(df))
-    conn = sqlite3.connect('beacon_data.db')
+    conn = sqlite3.connect(db)
     c = conn.cursor()
     for i, row in data.iterrows():
         c.execute("INSERT into proximity VALUES (?,?,?,?);", (int(row.timestamp), int(row.userid), int(row.beacon_id), int(row.rssi)))
@@ -35,7 +36,7 @@ def get_location():
     params (optional): 
     - userid: userid to return results for
     """
-    conn = sqlite3.connect('beacon_data.db')
+    conn = sqlite3.connect(db)
     c = conn.cursor()
     userid = request.args.get('userid')
     if userid is None:
@@ -48,7 +49,7 @@ def get_location():
 
 @app.route('/createloctable', methods=['GET'])
 def create_location_table():
-    conn = sqlite3.connect('beacon_data.db')
+    conn = sqlite3.connect(db)
     c = conn.cursor()
     try:
         c.execute("CREATE TABLE proximity (timestamp int, userid int, beacon_id int, rssi int);")
@@ -61,7 +62,7 @@ def create_location_table():
 
 @app.route('/createpurchasetable', methods=['GET'])
 def create_purchase_table():
-    conn = sqlite3.connect('beacon_data.db')
+    conn = sqlite3.connect(db)
     c = conn.cursor()
     try:
         c.execute("CREATE TABLE purchases (timestamp int, userid int, ean str, price str);")
@@ -81,7 +82,7 @@ def write_to_csv():
     - userid: userid to return results for
     - filename: file name to write to
     """
-    conn = sqlite3.connect('beacon_data.db')
+    conn = sqlite3.connect(db)
     c = conn.cursor()
     userid = request.args.get('userid')
     filename = request.args.get('filename')
@@ -107,7 +108,7 @@ def write_purchase_to_csv():
     - userid: userid to return results for
     - filename: file name to write to
     """
-    conn = sqlite3.connect('beacon_data.db')
+    conn = sqlite3.connect(db)
     c = conn.cursor()
     userid = request.args.get('userid')
     filename = request.args.get('filename')
@@ -144,7 +145,7 @@ def post_purchase():
     print(len(df))
     df.columns = ['timestamp', 'userid', 'ean', 'price']
     data = df
-    conn = sqlite3.connect('beacon_data.db')
+    conn = sqlite3.connect(db)
     c = conn.cursor()
     for i, row in data.iterrows():
         c.execute("INSERT into purchases VALUES (?,?,?,?);", (int(row.timestamp), int(row.userid), row.ean, row.price))
@@ -159,7 +160,7 @@ def get_purchases():
     params (optional): 
     - userid: userid to return results for
     """
-    conn = sqlite3.connect('beacon_data.db')
+    conn = sqlite3.connect(db)
     c = conn.cursor()
     userid = request.args.get('userid')
     if userid is None:
